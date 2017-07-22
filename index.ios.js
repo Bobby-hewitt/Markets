@@ -27,7 +27,7 @@ import Video from 'react-native-video'
 import RowContainer from './components/RowContainer'
 import PageHeader from './components/PageHeader/'
 import SwiperContainer from './components/SwiperContainer'
-
+import SwipeCard from './components/SwipeCard'
 
 export default class Markets extends Component {
 
@@ -53,7 +53,14 @@ export default class Markets extends Component {
       <LinearGradient colors={['rgba(16,16,16,0.95)', 'rgba(16,16,16,0.9)']} style={styles.overlay}/>
     <PageHeader header="markets"/>
 
-    <SwiperContainer />
+    <SwiperContainer >
+      <SwipeCard color="#ebebeb" text="Hellooooo"/>
+            <SwipeCard color="#998877" text="Hellooooo"/>
+                  <SwipeCard color="#123abc" text="Hellooooo"/>
+                        <SwipeCard color="#ebebeb" text="Hellooooo"/>
+                              <SwipeCard color="#987654" text="Hellooooo"/>
+      
+    </SwiperContainer>
       
 
       </View>

@@ -17,6 +17,7 @@ export default class SwipeCard extends Component {
 		let c = this.props.color
 		return(
 			<Animated.View style={[styles.container, globalStyles.center,  { backgroundColor: this.props.color, width: this.props.width}]}>
+				<Text>{this.props.text}</Text>
 			</Animated.View>
 		)
 	}

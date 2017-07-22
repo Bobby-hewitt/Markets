@@ -23,6 +23,7 @@ import createLogger from 'redux-logger'
 import LinearGradient from 'react-native-linear-gradient';
 import Video from 'react-native-video'
 
+
 import RowContainer from './components/RowContainer'
 import PageHeader from './components/PageHeader/'
 import SwiperContainer from './components/SwiperContainer'
@@ -51,6 +52,7 @@ export default class Markets extends Component {
        
       <LinearGradient colors={['rgba(16,16,16,0.95)', 'rgba(16,16,16,0.9)']} style={styles.overlay}/>
     <PageHeader header="markets"/>
+
     <SwiperContainer />
       
 

@@ -12,22 +12,26 @@ import {
 import styles from './styles'
 import globalStyles from '../../styles/globalStyles'
 import SwipeCard from '../SwipeCard'
+import Test from '../Test'
+
 
 export default class SwiperContainer extends Component {
 
 	
 	constructor(props){
 		super(props)
+		this.minimumScale = 0.7
+		this.minimumOpacity = 0.7		
 		this.overlap = -150
 		this.margin = 25
 		this.state ={
 			animationComplete: true,
 			opacityToFade: new Animated.Value(1),
-			opacityToAppearLeft: new Animated.Value(0.5),
-			opacityToAppearRight: new Animated.Value(0.5),
+			opacityToAppearLeft: new Animated.Value(this.minimumOpacity),
+			opacityToAppearRight: new Animated.Value(this.minimumOpacity),
 			containerOffset: new Animated.Value(this.margin),
-			scaleToGrowLeft: new Animated.Value(0.5),
-			scaleToGrowRight: new Animated.Value(0.5),
+			scaleToGrowLeft: new Animated.Value(this.minimumScale),
+			scaleToGrowRight: new Animated.Value(this.minimumScale),
 			scaleToShrink: new Animated.Value(1),
 			cards: [
 				'HI', 'There', 'Someone', 'who', 'likes', 'markets'
@@ -70,7 +74,7 @@ export default class SwiperContainer extends Component {
 
 
 
-
+	      		console.log(gestureState.vx)
 
 
 
@@ -89,21 +93,23 @@ export default class SwiperContainer extends Component {
 						this.swipeLeft()	
 					}
 				} else {
-					let valToSet = dx / 400
-					this.state.containerOffset.setValue(this.state.containerOffset._value + (dx / 80))
+					let valToSet = dx / 800
+					if (this.state.activeX !== 0 || this.state.activeX !== this.state.cards.length-1){
+						this.state.containerOffset.setValue(this.state.containerOffset._value + (dx / 80))
+					}
 					if (dx > 0){
 						console.log('greater than 0')
-						this.state.opacityToAppearLeft.setValue(0.5+valToSet)
-						this.state.scaleToGrowLeft.setValue(0.5+valToSet)
+						this.state.opacityToAppearLeft.setValue(this.minimumOpacity+valToSet)
+						this.state.scaleToGrowLeft.setValue(this.minimumScale+valToSet)
 
 						this.state.opacityToFade.setValue(1-valToSet)
 						this.state.scaleToShrink.setValue(1-valToSet)
 					} else {
-						this.state.scaleToGrowRight.setValue(0.5+valToSet)
-						this.state.opacityToFade.setValue(0.5+valToSet)
+						this.state.scaleToGrowRight.setValue(this.minimumScale+valToSet*-1)
+						this.state.opacityToFade.setValue(this.minimumOpacity+valToSet*-1)
 	
-						this.state.opacityToAppearRight.setValue(1-valToSet)
-						this.state.scaleToShrink.setValue(1-valToSet)
+						this.state.opacityToAppearRight.setValue(1-valToSet*-1)
+						this.state.scaleToShrink.setValue(1-valToSet*-1)
 					}
 				}
 
@@ -117,6 +123,55 @@ export default class SwiperContainer extends Component {
 	      onPanResponderTerminationRequest: (evt, gestureState) => true,
 	      onPanResponderRelease: (evt, gestureState) => {
 	      	this.setState({swipeRegistered: false})
+	      	if (this.state.animationComplete){
+	      		Animated.parallel([
+				Animated.timing(
+					this.state.containerOffset,
+					    {toValue:  -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin) ,
+					    duration: 300,
+					    easing: Easing.easeInOut
+					    }
+					),				
+					Animated.timing(
+					    this.state.scaleToGrowLeft,
+					    {toValue: this.minimumScale,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.scaleToShrink,
+					    {toValue: 1,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.opacityToAppearLeft,
+					    {toValue: this.minimumOpacity,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.opacityToFade,
+					    {toValue: 1,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+			    this.state.scaleToGrowRight,
+			    {toValue: this.minimumScale,
+			    duration: 300,
+				easing: Easing.easeInOut}
+			),			Animated.timing(
+			    this.state.opacityToAppearRight,
+			    {toValue: this.minimumOpacity,
+			    duration: 300,
+				easing: Easing.easeInOut}
+			)
+			], { useNativeDriver: true }).start((completed) => {
+				
+			})
+	      			
+	      	}
 	        // The user has released all touches while this view is the
 	        // responder. This typically means a gesture has succeeded
 	      },
@@ -156,24 +211,24 @@ export default class SwiperContainer extends Component {
 			),
 			Animated.timing(
 			    this.state.opacityToFade,
-			    {toValue: 0.5,
+			    {toValue: this.minimumOpacity,
 			    duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.scaleToShrink,
-			    {toValue: 0.5,
+			    {toValue: this.minimumScale,
 			    duration: 300,
 				easing: Easing.easeInOut}
 			)
 		], { useNativeDriver: true }).start((completed) => {
 			console.log('in complete callback', completed)
-			this.setState({activeX: this.state.activeX + 1}, () => {
+			this.setState({activeX: this.state.activeX + 1, animationComplete: true}, () => {
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin)  )
 			})
 			this.state.opacityToFade.setValue(1)
-			this.state.opacityToAppearRight.setValue(0.5)
-			this.state.scaleToGrowRight.setValue(0.5)
+			this.state.opacityToAppearRight.setValue(this.minimumOpacity)
+			this.state.scaleToGrowRight.setValue(this.minimumScale)
 			this.state.scaleToShrink.setValue(1)
 		})
 		
@@ -197,7 +252,7 @@ export default class SwiperContainer extends Component {
 			),
 			Animated.timing(
 			    this.state.scaleToShrink,
-			    {toValue: 0.5,
+			    {toValue: this.minimumScale,
 			   duration: 300,
 				easing: Easing.easeInOut}
 			),
@@ -209,23 +264,20 @@ export default class SwiperContainer extends Component {
 			),
 			Animated.timing(
 			    this.state.opacityToFade,
-			    {toValue: 0.5,
+			    {toValue: this.minimumOpacity,
 			   duration: 300,
 				easing: Easing.easeInOut}
 			),
 		], { useNativeDriver: true }).start((completed) => {
-			console.log('in complete callback', completed)
 			let activeToAdd = this.state.activeX >0 ? -1 : 0
-			this.setState({activeX: this.state.activeX + activeToAdd}, () => {
+			this.setState({activeX: this.state.activeX + activeToAdd, animationComplete: true}, () => {
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin)  )
 			})
 			this.state.opacityToFade.setValue(1)
-			this.state.opacityToAppearLeft.setValue(0.5)
-			this.state.scaleToGrowLeft.setValue(0.5)
+			this.state.opacityToAppearLeft.setValue(this.minimumScale)
+			this.state.scaleToGrowLeft.setValue(this.minimumOpacity)
 			this.state.scaleToShrink.setValue(1)
 		})
-
-		
 	}
 
 
@@ -235,7 +287,6 @@ export default class SwiperContainer extends Component {
 			<Animated.View style={[styles.container, {marginLeft: this.state.containerOffset}]} {...this._panResponder.panHandlers}>
 				{this.state.cards.map((card, i) => {
 						if (this.state.activeX === i){
-							console.log(card)
 							return (
 								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 3,width:this.cardWidth, opacity: this.state.opacityToFade,backgroundColor: 'blue',transform: [{scale: this.state.scaleToShrink}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
@@ -256,7 +307,7 @@ export default class SwiperContainer extends Component {
 							)			
 						} else {
 							return (
-								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 1,width:this.cardWidth, opacity:0.5, transform: [{scale: 0.5}]}]} >
+								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 1,width:this.cardWidth, opacity:this.minimumOpacity, transform: [{scale: this.minimumScale}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
 								</Animated.View>
 							)		

@@ -21,6 +21,7 @@ export default class SwiperContainer extends Component {
 		this.overlap = -150
 		this.margin = 25
 		this.state ={
+			zIndex: [3,2,1,0],
 			animationComplete: true,
 			opacityToFade: new Animated.Value(1),
 			opacityToAppearLeft: new Animated.Value(0.5),
@@ -63,6 +64,27 @@ export default class SwiperContainer extends Component {
 	        // gestureState.d{x,y} will be set to zero now
 	      },
 	      onPanResponderMove: (evt, gestureState) => {
+
+
+
+	      		let dx = gestureState.dx
+
+	      		if (dx < -5){
+	      			if (this.state.zIndex !== [2,3,1,0]){
+	      				this.setState({zIndex: [2,3,1,0]})
+	      			}
+	      		}
+	      		if(dx > 5){
+	      			if (this.state.zIndex !== [2,1,3,0]){
+	      				this.setState({zIndex: [2,1,3,0]})
+	      			}
+	      		}
+
+
+
+
+	      		console.log(gestureState)
+	      		console.log(e)
 				if (gestureState.dx > this.swipeThreshold && ((this.state.activeX > 0) || (this.state.activeX > 1 && !animationComplete))){
 					if (!this.state.swipeRegistered){
 						this.setState({swipeRegistered: true, swipeDirection: 'right', animationComplete: false})
@@ -71,11 +93,28 @@ export default class SwiperContainer extends Component {
 					}
 				} 
 
-				if (gestureState.dx  < this.swipeThreshold * -1 && this.state.activeX < this.state.cards.length-1){
+				else if (gestureState.dx  < this.swipeThreshold * -1 && this.state.activeX < this.state.cards.length-1){
 					if (!this.state.swipeRegistered){
 						this.setState({swipeRegistered: true, swipeDirection: 'left', animationComplete: false})
 						
 						this.swipeLeft()	
+					}
+				} else {
+					let valToSet = dx / 800
+					this.state.containerOffset.setValue(this.state.containerOffset._value + (dx / 50))
+					if (dx > 0){
+						console.log('greater than 0')
+						this.state.opacityToAppearLeft.setValue(0.5+valToSet)
+						this.state.scaleToGrowLeft.setValue(0.5+valToSet)
+
+						this.state.opacityToFade.setValue(1-valToSet)
+						this.state.scaleToShrink.setValue(1-valToSet)
+					} else {
+						this.state.scaleToGrowRight.setValue(0.5+valToSet*-1)
+						this.state.opacityToFade.setValue(0.5+valToSet*-1)
+	
+						this.state.opacityToAppearRight.setValue(1-valToSet*-1)
+						this.state.scaleToShrink.setValue(1-valToSet*-1)
 					}
 				}
 
@@ -89,6 +128,56 @@ export default class SwiperContainer extends Component {
 	      onPanResponderTerminationRequest: (evt, gestureState) => true,
 	      onPanResponderRelease: (evt, gestureState) => {
 	      	this.setState({swipeRegistered: false})
+	      	if (this.state.animationComplete){
+	      		this.setState({zIndex: [3,2,1,0]})
+	      		Animated.parallel([
+				Animated.timing(
+					this.state.containerOffset,
+					    {toValue:  -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin) ,
+					    duration: 300,
+					    easing: Easing.easeInOut
+					    }
+					),				
+					Animated.timing(
+					    this.state.scaleToGrowLeft,
+					    {toValue: 0.5,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.scaleToShrink,
+					    {toValue: 1,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.opacityToAppearLeft,
+					    {toValue: 0.5,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+					    this.state.opacityToFade,
+					    {toValue: 1,
+					   duration: 300,
+						easing: Easing.easeInOut}
+					),
+					Animated.timing(
+			    this.state.scaleToGrowRight,
+			    {toValue: 0.5,
+			    duration: 300,
+				easing: Easing.easeInOut}
+			),			Animated.timing(
+			    this.state.opacityToAppearRight,
+			    {toValue: 0.5,
+			    duration: 300,
+				easing: Easing.easeInOut}
+			)
+			], { useNativeDriver: true }).start((completed) => {
+				
+			})
+	      			
+	      	}
 	        // The user has released all touches while this view is the
 	        // responder. This typically means a gesture has succeeded
 	      },
@@ -111,31 +200,36 @@ export default class SwiperContainer extends Component {
 			Animated.timing(
 			    this.state.containerOffset,
 			    {toValue: this.state.containerOffset._value - (this.cardWidth + this.overlap),
+			    duration: 300,
 				easing: Easing.easeInOut}
 			),			
 			Animated.timing(
 			    this.state.scaleToGrowRight,
 			    {toValue: 1,
+			    duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.opacityToAppearRight,
 			    {toValue: 1,
+			    duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.opacityToFade,
 			    {toValue: 0.5,
+			    duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.scaleToShrink,
 			    {toValue: 0.5,
+			    duration: 300,
 				easing: Easing.easeInOut}
 			)
 		], { useNativeDriver: true }).start((completed) => {
 			console.log('in complete callback', completed)
-			this.setState({activeX: this.state.activeX + 1}, () => {
+			this.setState({activeX: this.state.activeX + 1, animationComplete: true}, () => {
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin)  )
 			})
 			this.state.opacityToFade.setValue(1)
@@ -152,33 +246,38 @@ export default class SwiperContainer extends Component {
 			Animated.timing(
 			    this.state.containerOffset,
 			    {toValue: this.state.containerOffset._value + (this.cardWidth + this.overlap),
+			    duration: 300,
 			    easing: Easing.easeInOut
 			    }
 			),				
 			Animated.timing(
 			    this.state.scaleToGrowLeft,
 			    {toValue: 1,
+			   duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.scaleToShrink,
 			    {toValue: 0.5,
+			   duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.opacityToAppearLeft,
 			    {toValue: 1,
+			   duration: 300,
 				easing: Easing.easeInOut}
 			),
 			Animated.timing(
 			    this.state.opacityToFade,
 			    {toValue: 0.5,
+			   duration: 300,
 				easing: Easing.easeInOut}
 			),
 		], { useNativeDriver: true }).start((completed) => {
 			console.log('in complete callback', completed)
 			let activeToAdd = this.state.activeX >0 ? -1 : 0
-			this.setState({activeX: this.state.activeX + activeToAdd}, () => {
+			this.setState({activeX: this.state.activeX + activeToAdd, animationComplete: true}, () => {
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap) - this.margin)  )
 			})
 			this.state.opacityToFade.setValue(1)
@@ -199,26 +298,26 @@ export default class SwiperContainer extends Component {
 						if (this.state.activeX === i){
 							console.log(card)
 							return (
-								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 3,width:this.cardWidth, opacity: this.state.opacityToFade,backgroundColor: 'blue',transform: [{scale: this.state.scaleToShrink}]}]} >
+								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: this.state.zIndex[0],width:this.cardWidth, opacity: this.state.opacityToFade,backgroundColor: 'blue',transform: [{scale: this.state.scaleToShrink}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
 								</Animated.View>
 							)			
 
 						} else if (i === this.state.activeX + 1){
 							return (
-								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 2,width:this.cardWidth, opacity: this.state.opacityToAppearRight, transform: [{scale: this.state.scaleToGrowRight}]}]} >
+								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: this.state.zIndex[1],width:this.cardWidth, opacity: this.state.opacityToAppearRight, transform: [{scale: this.state.scaleToGrowRight}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
 								</Animated.View>
 							)			
 						} else if (i === this.state.activeX - 1){
 							return (
-								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 2,width:this.cardWidth, opacity: this.state.opacityToAppearLeft, transform: [{scale: this.state.scaleToGrowLeft}]}]} >
+								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: this.state.zIndex[2],width:this.cardWidth, opacity: this.state.opacityToAppearLeft, transform: [{scale: this.state.scaleToGrowLeft}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
 								</Animated.View>
 							)			
 						} else {
 							return (
-								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: 1,width:this.cardWidth, opacity:0.5, transform: [{scale: 0.5}]}]} >
+								<Animated.View key={i} style={[styles.card, {marginRight: this.overlap,zIndex: this.state.zIndex[3],width:this.cardWidth, opacity:0.5, transform: [{scale: 0.5}]}]} >
 									<SwipeCard  text={card} color={this.state.colors[i]} width={this.cardWidth} index={i}/>
 								</Animated.View>
 							)		

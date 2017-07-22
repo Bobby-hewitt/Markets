@@ -22,7 +22,7 @@ import thunkMiddleware from 'redux-thunk'
 import createLogger from 'redux-logger'
 import LinearGradient from 'react-native-linear-gradient';
 import Video from 'react-native-video'
-
+import ReactSwiper from 'react-native-3d-swiper'
 
 import RowContainer from './components/RowContainer'
 import PageHeader from './components/PageHeader/'
@@ -53,14 +53,16 @@ export default class Markets extends Component {
       <LinearGradient colors={['rgba(16,16,16,0.95)', 'rgba(16,16,16,0.9)']} style={styles.overlay}/>
     <PageHeader header="markets"/>
 
-    <SwiperContainer >
-      <SwipeCard color="#ebebeb" text="Hellooooo"/>
-            <SwipeCard color="#998877" text="Hellooooo"/>
-                  <SwipeCard color="#123abc" text="Hellooooo"/>
-                        <SwipeCard color="#ebebeb" text="Hellooooo"/>
-                              <SwipeCard color="#987654" text="Hellooooo"/>
-      
-    </SwiperContainer>
+    <ReactSwiper
+      duration={200}
+      margin={80}
+      minimumOpacity={1}>
+        <SwipeCard color="#ebebeb" text="Hellooooo"/>
+        <SwipeCard color="#998877" text="Hellooooo"/>
+        <SwipeCard color="#123abc" text="Hellooooo"/>
+        <SwipeCard color="#ebebeb" text="Hellooooo"/>
+        <SwipeCard color="#987654" text="Hellooooo"/>
+    </ReactSwiper>
       
 
       </View>

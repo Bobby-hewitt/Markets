@@ -7,7 +7,6 @@ export default styles = StyleSheet.create({
 
 
   container:{
-	flex:1,
-
+	height:200,
   },
 });

@@ -10,16 +10,15 @@ import styles from './styles'
 import globalStyles from '../../styles/globalStyles'
 import LinearGradient from 'react-native-linear-gradient';
 
-export default class SwipeCard extends Component {
+export default class ProductCard extends Component {
 
-	onPress(){
-		console.log('on press')
-	}
+
 
 	render(){
+		console.log(this.props.color)
 		return(
-			<TouchableOpacity onPress={this.onPress}>
-			<Animated.View style={[styles.container, globalStyles.center,  { backgroundColor: '#ebebeb', width: this.props.width}]}>
+	
+			<Animated.View style={[styles.container, globalStyles.center]}>
 				<Image source={this.props.image} style={styles.image}/>
 
 				
@@ -28,7 +27,7 @@ export default class SwipeCard extends Component {
 					locations={[0,0.8,1]}style={styles.overlay}/>
 				<Text style={styles.text}>{this.props.text}</Text>
 			</Animated.View>
-			</TouchableOpacity>
+		
 		)
 	}
 }

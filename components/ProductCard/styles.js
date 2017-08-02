@@ -8,8 +8,8 @@ export default styles = StyleSheet.create({
 
   container:{
   	borderRadius:10,
-	height:220,
-	width:Dimensions.get('window').width -30,
+	height:150,
+  flex:1,
 	overflow:'hidden',
   },
   text:{

@@ -13,10 +13,4 @@ export default styles = StyleSheet.create({
     justifyContent:'flex-start'
   },
 
-  card:{
-  	shadowColor:'#ebebeb',
-  	shadowOffset:{width:5, height:5},
-  	shadowRadius:5,
-  }
-
 });

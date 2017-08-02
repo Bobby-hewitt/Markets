@@ -7,10 +7,10 @@ export default styles = StyleSheet.create({
 
 
   container:{
-  	borderRadius:10,
-	height:220,
-	width:Dimensions.get('window').width -30,
-	overflow:'hidden',
+    borderRadius:10,
+	height:200,
+	width:200,
+	overflow:'hidden'
   },
   text:{
   	fontWeight:'bold',
@@ -32,15 +32,15 @@ export default styles = StyleSheet.create({
   	position:'absolute',
   	top:0,
   	left:0,
-  	height:220,
-  	width:Dimensions.get('window').width -30,
+  	height:200,
+  	width:200,
   },
    image:{
    	resizeMode:'cover',
   	position:'absolute',
   	top:0,
   	left:0,
-  	height:220,
-  	width:Dimensions.get('window').width -30,
+  	height:200,
+  	width:200,
   }
 });

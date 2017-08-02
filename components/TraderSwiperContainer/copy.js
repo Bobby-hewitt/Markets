@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import styles from './styles'
 
-export default class SwiperContainer extends Component {
+export default class TraderSwiperContainer extends Component {
 
 	static defaultProps = {
 		minimumScale: 0.7,
@@ -17,6 +17,12 @@ export default class SwiperContainer extends Component {
 		margin: 15,
 		duration: 100,
 		swipeThreshold: 100,
+		onSwipeUp: ()=>{return},
+		onSwipeDown: ()=>{return},
+		onPress: ()=>{return},
+		getActiveValue: ()=>{return},
+		touchDetected: () => {return},
+		touchReleasedWithoutChange: () => {}
    	};
 
 	constructor(props){
@@ -27,7 +33,7 @@ export default class SwiperContainer extends Component {
 		this.margin = (Dimensions.get('window').width - this.props.cardWidth) / 2
 		this.duration = this.props.duration
 		this.cardWidth = this.props.cardWidth
-		this.swipeThreshold = 100
+		this.swipeThreshold = this.props.swipeThreshold
 		this.state ={
 			animationComplete: true,
 			opacityToFade: new Animated.Value(1),
@@ -43,32 +49,6 @@ export default class SwiperContainer extends Component {
 		}
 	}
 
-	componentWillReceiveProps(nextProps){
-		if (!nextProps.isActive){
-			Animated.timing(
-			    this.state.scaleToShrink,
-			    {toValue: 1.2,
-			   	duration: this.duration * 2,
-				easing: Easing.elastic(Easing.easeInOut)},
-				{useNativeDriver: true}
-			).start()
-		} else if (nextProps.isActive && !this.props.isActive){
-			Animated.timing(
-			    this.state.scaleToShrink,
-			    {toValue: 1,
-			   	duration: this.duration * 2,
-				easing: Easing.elastic(Easing.easeInOut)},
-				{useNativeDriver: true}
-			).start()
-		}
-	}
-
-	selectItem(){
-		console.log('in function')
-		this.props.selectItem(this.state.activeX)
-		
-	}
-
 	componentWillMount(){
 		//create elements from children provided
 		let cards = []
@@ -79,82 +59,76 @@ export default class SwiperContainer extends Component {
 		this.setState({cards:cards})
 		//create reference to offset value
 		this.state.containerOffset.addListener(({value}) => this._value = value);
-		this.state.scaleToShrink.addListener(({value}) => this._value = value);
 
 		this._panResponder = PanResponder.create({
 	      onStartShouldSetPanResponder: (evt, gestureState) => true,
 	      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
 	      onMoveShouldSetPanResponder: (evt, gestureState) => true,
 	      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+	       onPanResponderGrant: (evt, gestureState) => {
+      			this.props.touchDetected()
+      		},
 	      onPanResponderMove: (evt, gestureState) => {
 	      	let dx = gestureState.dx
 	      	let dy = gestureState.dy
 
-	      	if (!this.props.isActive){
-	      		if (dy  > this.swipeThreshold){
-		      		this.selectItem()
-		      	}
+	      	if (dy  *-1 > this.swipeThreshold){
+	      		this.props.onSwipeUp(this.state.activeX)
 	      	}
-	      	if (this.props.isActive){
-		      	if (dy * -1 > this.swipeThreshold){
-		      		this.selectItem()
-		      	}
-		      	//handle z index of cards so card becoming active always shows top
-	      		if (dx > 1 && this.state.zIndex !==[2,1,3,0]){
-	      			this.setState({zIndex: [2,1,3,0]})
-	      		} else if (dx < -1 && this.state.zIndex !==[2,3,1,0]){
-	 			this.setState({zIndex: [2,3,1,0]})
-	      		}
-	      		//swipe right if swipeThreshold is reached
-				if (gestureState.dx > this.swipeThreshold && ((this.state.activeX > 0) || (this.state.activeX > 1 && !animationComplete))){
-					if (!this.state.swipeRegistered){
-						this.setState({swipeRegistered: true, swipeDirection: 'right', animationComplete: false})
-						this.swipeRight()	
-					}
-				} 
-				//swipe left if swipe threshold is reached
-				else if (gestureState.dx  < this.swipeThreshold * -1 && this.state.activeX < this.state.cards.length-1){
-					if (!this.state.swipeRegistered){
-						this.setState({swipeRegistered: true, swipeDirection: 'left', animationComplete: false})
-						this.swipeLeft()	
-					}
-				} 
-				// handle touch responsiveness before final animation is called
-				else {
-						let valToSet = dx / 800
-						if (this.state.activeX !== 0 || this.state.activeX !== this.state.cards.length-1){
-							this.state.containerOffset.setValue(this.state.containerOffset._value + (dx / 80))
-						}
-						if (dx > 0){
-							this.state.opacityToAppearLeft.setValue(this.minimumOpacity+valToSet)
-							this.state.scaleToGrowLeft.setValue(this.minimumScale+valToSet)
+	      	if (dy > this.swipeThreshold){
+	      		this.props.onSwipeDown(this.state.activeX)
+	      	}
 
-							this.state.opacityToFade.setValue(1-valToSet)
-							this.state.scaleToShrink.setValue(1-valToSet)
-						} else {
-							this.state.scaleToGrowRight.setValue(this.minimumScale+valToSet*-1)
-							this.state.opacityToFade.setValue(this.minimumOpacity+valToSet*-1)
-		
-							this.state.opacityToAppearRight.setValue(1-valToSet*-1)
-							this.state.scaleToShrink.setValue(1-valToSet*-1)
-						}
+	      	//handle z index of cards so card becoming active always shows top
+      		if (dx > 1 && this.state.zIndex !==[2,1,3,0]){
+      			this.setState({zIndex: [2,1,3,0]})
+      		} else if (dx < -1 && this.state.zIndex !==[2,3,1,0]){
+ 			this.setState({zIndex: [2,3,1,0]})
+      		}
+      		//swipe right if swipeThreshold is reached
+			if (gestureState.dx > this.swipeThreshold && ((this.state.activeX > 0) || (this.state.activeX > 1 && !animationComplete))){
+				if (!this.state.swipeRegistered){
+					this.setState({swipeRegistered: true, swipeDirection: 'right', animationComplete: false})
+					this.swipeRight()	
+				}
+			} 
+			//swipe left if swipe threshold is reached
+			else if (gestureState.dx  < this.swipeThreshold * -1 && this.state.activeX < this.state.cards.length-1){
+				if (!this.state.swipeRegistered){
+					this.setState({swipeRegistered: true, swipeDirection: 'left', animationComplete: false})
+					this.swipeLeft()	
+				}
+			} 
+			// handle touch responsiveness before final animation is called
+			else {
+					let valToSet = dx / 800
+					if (this.state.activeX !== 0 || this.state.activeX !== this.state.cards.length-1){
+						this.state.containerOffset.setValue(this.state.containerOffset._value + (dx / 80))
+					}
+					if (dx > 0){
+						this.state.opacityToAppearLeft.setValue(this.minimumOpacity+valToSet)
+						this.state.scaleToGrowLeft.setValue(this.minimumScale+valToSet)
+
+						this.state.opacityToFade.setValue(1-valToSet)
+						this.state.scaleToShrink.setValue(1-valToSet)
+					} else {
+						this.state.scaleToGrowRight.setValue(this.minimumScale+valToSet*-1)
+						this.state.opacityToFade.setValue(this.minimumOpacity+valToSet*-1)
+	
+						this.state.opacityToAppearRight.setValue(1-valToSet*-1)
+						this.state.scaleToShrink.setValue(1-valToSet*-1)
 					}
 				}
-		    },
+	      	},
 		    onPanResponderTerminationRequest: (evt, gestureState) => true,
 		    onPanResponderRelease: (evt, gestureState) => {
-		      	if (gestureState.dx === 0 && gestureState.dy === 0){
-		      		this.selectItem(this.state.activeX)
-		      	}
-
 		      	this.setState({swipeRegistered: false})
-		      	
-		      	if ((gestureState.dy > this.swipeThreshold || gestureState.dy * -1 > this.swipeThreshold) && (gestureState.dx < this.swipeThreshold || gestureState.dx * -1 > this.swipeThreshold)){
-		      		return
+		      	if (gestureState.dx === 0 && gestureState.dy === 0){
+		      		this.props.onPress(this.state.activeX)
 		      	}
-		      	if (this.props.isActive){
 		    	//reset animation positions if threshold not reached
 		      	if (this.state.animationComplete){
+		      		this.props.touchReleasedWithoutChange()
 			      	if (this.state.zIndex !==[3,2,1,0]){
 			      		this.setState({zIndex: [3,2,1,0]})
 			      	}
@@ -202,7 +176,6 @@ export default class SwiperContainer extends Component {
 							easing: Easing.elastic(Easing.easeInOut)}
 					)], { useNativeDriver: true }).start()		
 		      	}
-		      	}
 		    },
 	     	onPanResponderTerminate: (evt, gestureState) => {
 	      		console.log('Pan responder has been terminated, check conflicts')
@@ -247,6 +220,7 @@ export default class SwiperContainer extends Component {
 		], { useNativeDriver: true }).start((completed) => {
 			this.setState({activeX: this.state.activeX + 1, animationComplete: true, zIndex: [3,2,1,0]}, () => {
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap * -1) - this.margin)  )
+				this.props.getActiveValue(this.state.activeX)
 			})
 			this.state.opacityToFade.setValue(1)
 			this.state.opacityToAppearRight.setValue(this.minimumOpacity)
@@ -291,6 +265,7 @@ export default class SwiperContainer extends Component {
 		], { useNativeDriver: true }).start((completed) => {
 			let activeToAdd = this.state.activeX >0 ? -1 : 0
 			this.setState({activeX: this.state.activeX + activeToAdd, animationComplete: true, zIndex: [3,2,1,0]}, () => {
+				this.props.getActiveValue(this.state.activeX)
 				this.state.containerOffset.setValue( -1* (this.state.activeX * (this.cardWidth + this.overlap * -1) - this.margin)  )
 			})
 			this.state.opacityToFade.setValue(1)
@@ -302,36 +277,30 @@ export default class SwiperContainer extends Component {
 
 	render(){
 		return(
-			<Animated.View style={[styles.container, {marginLeft: this.state.containerOffset}]} {...this._panResponder.panHandlers}>
+			<Animated.View style={[styles.container, {marginLeft: this.state.containerOffset, marginTop:30}]} {...this._panResponder.panHandlers}>
 				{this.state.cards.map((card, i) => {
 					if (this.state.activeX === i){
 						return (
-							<Animated.View key={i} style={[ styles.card, {marginRight: this.overlap * -1,zIndex: this.state.zIndex[0],width:this.props.cardWidth, opacity: this.state.opacityToFade,transform: [{scale: this.state.scaleToShrink}]}]} >
+							<Animated.View key={i} style={[{marginRight: this.overlap * -1,zIndex: this.state.zIndex[0],width:this.props.cardWidth, opacity: this.state.opacityToFade,transform: [{scale: this.state.scaleToShrink}]}]} >
 								{card}
 							</Animated.View>
 						)			
 
-					} else if (!this.props.isActive){
-						return(
-							<View key={i} style={{marginRight: this.overlap * -1, width:this.props.cardWidth, opacity: 0, transform: [{scale: this.minimumScale}]}} />
-						)
-					}
-
-					else if (i === this.state.activeX + 1 ){
+					} else if (i === this.state.activeX + 1){
 						return (
-							<Animated.View key={i} style={[ styles.card, {marginRight: this.overlap * -1,zIndex: this.state.zIndex[1],width:this.props.cardWidth, opacity: this.state.opacityToAppearRight, transform: [{scale: this.state.scaleToGrowRight}]}]} >
+							<Animated.View key={i} style={[{marginRight: this.overlap * -1,zIndex: this.state.zIndex[1],width:this.props.cardWidth, opacity: this.state.opacityToAppearRight, transform: [{scale: this.state.scaleToGrowRight}]}]} >
 								{card}
 							</Animated.View>
 						)			
-					} else if (i === this.state.activeX - 1 ){
+					} else if (i === this.state.activeX - 1){
 						return (
-							<Animated.View key={i} style={[ styles.card, {marginRight: this.overlap *-1,zIndex: this.state.zIndex[2],width:this.props.cardWidth, opacity: this.state.opacityToAppearLeft, transform: [{scale: this.state.scaleToGrowLeft}]}]} >
+							<Animated.View key={i} style={[{marginRight: this.overlap *-1,zIndex: this.state.zIndex[2],width:this.props.cardWidth, opacity: this.state.opacityToAppearLeft, transform: [{scale: this.state.scaleToGrowLeft}]}]} >
 								{card}
 							</Animated.View>
 						)			
 					} else {
 						return (
-							<Animated.View key={i} style={[ styles.card, {marginRight: this.overlap *-1,zIndex: this.state.zIndex[3],width:this.props.cardWidth, opacity:this.minimumOpacity, transform: [{scale: this.minimumScale}]}]} >
+							<Animated.View key={i} style={[{marginRight: this.overlap *-1,zIndex: this.state.zIndex[3],width:this.props.cardWidth, opacity:this.minimumOpacity, transform: [{scale: this.minimumScale}]}]} >
 								{card}
 							</Animated.View>
 						)		
